@@ -10,6 +10,7 @@ import { Attendance } from './attendance/attendance.entity';
 import { AttendanceModule } from './attendance/attendance.module';
 import { Transaction } from './transactions/transaction.entity';
 import { TransactionsModule } from './transactions/transactions.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     ShiftsModule,
     AttendanceModule,
     TransactionsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
