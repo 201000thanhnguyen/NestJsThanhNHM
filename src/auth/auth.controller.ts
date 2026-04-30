@@ -9,7 +9,7 @@ function isSecureCookie(): boolean {
   return (process.env.COOKIE_SECURE ?? '').toLowerCase() === 'true';
 }
 
-@Controller('auth')
+@Controller(['auth', 'api/auth'])
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
