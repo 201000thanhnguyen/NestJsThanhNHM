@@ -11,6 +11,8 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { Transaction } from './transactions/transaction.entity';
 import { TransactionsModule } from './transactions/transactions.module';
 import { AuthModule } from './auth/auth.module';
+import { Quote } from './quotes/quote.entity';
+import { QuotesModule } from './quotes/quotes.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
         Shift,
         Attendance,
         Transaction,
+        Quote,
       ],
       synchronize: true,
     }),
@@ -34,6 +37,7 @@ import { AuthModule } from './auth/auth.module';
     AttendanceModule,
     TransactionsModule,
     AuthModule,
+    QuotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
