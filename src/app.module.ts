@@ -13,6 +13,15 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { AuthModule } from './auth/auth.module';
 import { Quote } from './quotes/quote.entity';
 import { QuotesModule } from './quotes/quotes.module';
+import { DebtModule } from './debt/debt.module';
+import { DebtCustomer } from './debt/entities/customer.entity';
+import { DebtSnapshot } from './debt/entities/debt-snapshot.entity';
+import { DebtPaymentAdjustment } from './debt/entities/payment-adjustment.entity';
+import { DebtPaymentAllocation } from './debt/entities/payment-allocation.entity';
+import { DebtPayment } from './debt/entities/payment.entity';
+import { DebtProduct } from './debt/entities/product.entity';
+import { DebtTransactionItem } from './debt/entities/transaction-item.entity';
+import { DebtTransaction } from './debt/entities/transaction.entity';
 
 @Module({
   imports: [
@@ -29,6 +38,14 @@ import { QuotesModule } from './quotes/quotes.module';
         Attendance,
         Transaction,
         Quote,
+        DebtCustomer,
+        DebtProduct,
+        DebtTransaction,
+        DebtTransactionItem,
+        DebtPayment,
+        DebtPaymentAllocation,
+        DebtPaymentAdjustment,
+        DebtSnapshot,
       ],
       synchronize: true,
     }),
@@ -38,6 +55,7 @@ import { QuotesModule } from './quotes/quotes.module';
     TransactionsModule,
     AuthModule,
     QuotesModule,
+    DebtModule,
   ],
   controllers: [AppController],
   providers: [AppService],
