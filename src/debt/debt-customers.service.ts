@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { DebtCustomer } from './entities/customer.entity';
 
 @Injectable()
@@ -57,5 +58,17 @@ export class DebtCustomersService {
     const row = await this.customers.findOne({ where: { id } });
     if (!row) throw new NotFoundException('Không tìm thấy khách hàng');
     return row;
+  }
+
+  async update(id: string, dto: UpdateCustomerDto) {
+    const row = await this.customers.findOne({ where: { id } });
+    if (!row) throw new NotFoundException('Không tìm thấy khách hàng');
+
+    if (dto.name !== undefined) row.name = dto.name.trim();
+    if (dto.phone !== undefined) row.phone = dto.phone?.trim() || null;
+    if (dto.note !== undefined) row.note = dto.note?.trim() || null;
+
+    const saved = await this.customers.save(row);
+    return { data: saved };
   }
 }

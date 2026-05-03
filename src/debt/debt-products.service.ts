@@ -39,53 +39,104 @@ export class DebtProductsService {
    * Autocomplete: active products matching search, plus top-used product ids (by line-item frequency).
    */
   async searchForAutocomplete(search?: string, limit = 20) {
-    const q = search?.trim() ?? '';
-    const take = Math.min(Math.max(limit, 1), 50);
+    const raw = search?.trim() ?? '';
+    const q = raw.toLowerCase();
+    const take = Math.min(Math.max(limit, 1), 10);
 
-    const qb = this.products
-      .createQueryBuilder('p')
-      .where('p.isActive = :active', { active: true })
-      .orderBy('p.name', 'ASC')
-      .take(take);
+    const fetchTopUsed = async () => {
+      const topRows = (await this.products.manager.query(
+        `
+        SELECT product_id, COUNT(*) AS usage_count
+        FROM giao_dich_san_pham
+        WHERE product_id IS NOT NULL
+        GROUP BY product_id
+        ORDER BY usage_count DESC
+        LIMIT 12
+        `,
+      )) as TopRow[];
 
-    if (q) {
-      qb.andWhere('p.name LIKE :s', { s: `%${q}%` });
-    }
+      const topIds = topRows.map((r) => r.product_id).filter(Boolean);
+      if (!topIds.length) return [] as DebtProduct[];
 
-    const matched = await qb.getMany();
-
-    const topRows = await this.products.manager.query(
-      `
-      SELECT product_id, COUNT(*) AS usage_count
-      FROM giao_dich_san_pham
-      WHERE product_id IS NOT NULL
-      GROUP BY product_id
-      ORDER BY usage_count DESC
-      LIMIT 12
-      `,
-    ) as TopRow[];
-
-    const topIds = topRows.map((r) => r.product_id).filter(Boolean);
-    let topProducts: DebtProduct[] = [];
-    if (topIds.length) {
-      topProducts = await this.products
+      const topProducts = await this.products
         .createQueryBuilder('p')
         .where('p.id IN (:...ids)', { ids: topIds })
         .andWhere('p.is_active = true')
         .getMany();
       const order = new Map(topIds.map((id, i) => [id, i]));
       topProducts.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+      return topProducts;
+    };
+
+    // No keyword: return top-used (fast entry), cap to `take`.
+    if (!q) {
+      const topProducts = (await fetchTopUsed()).slice(0, take);
+      return {
+        data: {
+          results: [],
+          topUsed: topProducts,
+          merged: topProducts,
+        },
+      };
     }
 
-    const byId = new Map<string, DebtProduct>();
-    for (const p of topProducts) byId.set(p.id, p);
-    for (const p of matched) byId.set(p.id, p);
+    // Avoid overly-loose matching for 1-character searches.
+    if (q.length < 2) {
+      return { data: { results: [], topUsed: [], merged: [] } };
+    }
 
+    const out: DebtProduct[] = [];
+    const seen = new Set<string>();
+    const pushUnique = (rows: DebtProduct[]) => {
+      for (const p of rows) {
+        if (seen.has(p.id)) continue;
+        seen.add(p.id);
+        out.push(p);
+        if (out.length >= take) break;
+      }
+    };
+
+    // LEVEL 1: starts with keyword.
+    const level1 = await this.products
+      .createQueryBuilder('p')
+      .where('p.isActive = :active', { active: true })
+      .andWhere('LOWER(p.name) LIKE :s', { s: `${q}%` })
+      .orderBy('p.name', 'ASC')
+      .take(take)
+      .getMany();
+    pushUnique(level1);
+
+    // LEVEL 2: word match (space + keyword) if needed.
+    if (out.length < take) {
+      const remaining = take - out.length;
+      const level2 = await this.products
+        .createQueryBuilder('p')
+        .where('p.isActive = :active', { active: true })
+        .andWhere('LOWER(p.name) LIKE :s', { s: `% ${q}%` })
+        .orderBy('p.name', 'ASC')
+        .take(remaining)
+        .getMany();
+      pushUnique(level2);
+    }
+
+    // LEVEL 3: contains (only if no result from above).
+    if (out.length === 0) {
+      const level3 = await this.products
+        .createQueryBuilder('p')
+        .where('p.isActive = :active', { active: true })
+        .andWhere('LOWER(p.name) LIKE :s', { s: `%${q}%` })
+        .orderBy('p.name', 'ASC')
+        .take(take)
+        .getMany();
+      pushUnique(level3);
+    }
+
+    // IMPORTANT: when keyword is provided, do NOT merge in top-used unrelated items.
     return {
       data: {
-        results: matched,
-        topUsed: topProducts,
-        merged: [...byId.values()],
+        results: out,
+        topUsed: [],
+        merged: out,
       },
     };
   }

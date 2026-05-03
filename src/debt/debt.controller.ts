@@ -21,6 +21,7 @@ import { CreateDebtTransactionDto } from './dto/create-debt-transaction.dto';
 import { CreatePaymentAdjustmentDto } from './dto/create-payment-adjustment.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller(['debt', 'api/debt'])
@@ -43,6 +44,11 @@ export class DebtController {
   @Post('customers')
   createCustomer(@Body() dto: CreateCustomerDto) {
     return this.customers.create(dto);
+  }
+
+  @Patch('customers/:id')
+  updateCustomer(@Param('id') id: string, @Body() dto: UpdateCustomerDto) {
+    return this.customers.update(id, dto);
   }
 
   @Get('customers/:id/timeline')
