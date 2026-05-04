@@ -1,12 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { CreateDebtTransactionDto } from './dto/create-debt-transaction.dto';
 import { DebtTransactionItem } from './entities/transaction-item.entity';
 import { DebtTransaction } from './entities/transaction.entity';
 import { DebtCustomersService } from './debt-customers.service';
 import { DebtProductsService } from './debt-products.service';
-import { moneyNum, moneyStr, toDateOnlyString } from './debt.utils';
+import { debtStatus, moneyNum, moneyStr, toDateOnlyString } from './debt.utils';
 import { DebtSnapshotsService } from './debt-snapshots.service';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class DebtTransactionsService {
     private readonly customers: DebtCustomersService,
     private readonly products: DebtProductsService,
     private readonly snapshots: DebtSnapshotsService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(dto: CreateDebtTransactionDto) {
@@ -63,26 +65,70 @@ export class DebtTransactionsService {
     }
 
     const transactionDate = dto.transactionDate?.trim() || toDateOnlyString();
+    const prepaid = dto.prepaidAmount ?? 0;
+    if (!Number.isFinite(prepaid) || prepaid < 0) {
+      throw new BadRequestException('Số tiền trả trước không hợp lệ');
+    }
+    if (prepaid - total > 0.0001) {
+      throw new BadRequestException('Số tiền trả trước không được lớn hơn tổng tiền');
+    }
 
-    const transaction = this.txRepo.create({
-      customerId: customer.id,
-      customerNameSnapshot: customer.name,
-      totalAmount: moneyStr(total),
-      paidAmount: moneyStr(0),
-      status: 'UNPAID',
-      note: dto.note?.trim() || null,
-      transactionDate,
+    const savedTx = await this.dataSource.transaction(async (manager) => {
+      const txRepo = manager.getRepository(DebtTransaction);
+      const itemRepo = manager.getRepository(DebtTransactionItem);
+
+      const transaction = txRepo.create({
+        customerId: customer.id,
+        customerNameSnapshot: customer.name,
+        totalAmount: moneyStr(total),
+        prepaidAmount: moneyStr(prepaid),
+        paidAmount: moneyStr(prepaid),
+        status: debtStatus(total, prepaid),
+        note: dto.note?.trim() || null,
+        transactionDate,
+      });
+
+      const saved = await txRepo.save(transaction);
+
+      const rows = itemsToSave.map((row) =>
+        itemRepo.create({
+          ...row,
+          transactionId: saved.id,
+        }),
+      );
+      await itemRepo.save(rows);
+
+      if (prepaid > 0.0001) {
+        // Create a payment record at the same created_at as the transaction so reports can treat it as "paid at that time".
+        const paymentId = randomUUID();
+        await manager.query(
+          `
+          INSERT INTO thanh_toan (id, customer_id, customer_name_snapshot, amount, note, payment_date, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+          `,
+          [
+            paymentId,
+            customer.id,
+            customer.name,
+            moneyStr(prepaid),
+            'Trả trước khi ghi nợ',
+            transactionDate,
+            saved.createdAt,
+          ],
+        );
+
+        const allocId = randomUUID();
+        await manager.query(
+          `
+          INSERT INTO phan_bo_thanh_toan (id, payment_id, transaction_id, amount, created_at)
+          VALUES (?, ?, ?, ?, ?)
+          `,
+          [allocId, paymentId, saved.id, moneyStr(prepaid), saved.createdAt],
+        );
+      }
+
+      return saved;
     });
-
-    const savedTx = await this.txRepo.save(transaction);
-
-    const rows = itemsToSave.map((row) =>
-      this.itemRepo.create({
-        ...row,
-        transactionId: savedTx.id,
-      }),
-    );
-    await this.itemRepo.save(rows);
 
     await this.snapshots.refreshForCustomer(customer.id);
 

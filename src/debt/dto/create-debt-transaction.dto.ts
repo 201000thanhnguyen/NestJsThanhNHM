@@ -1,4 +1,14 @@
-import { ArrayMinSize, IsDateString, IsOptional, IsString, IsUUID, MaxLength, ValidateNested } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateTransactionItemDto } from './create-transaction-item.dto';
 
@@ -14,6 +24,12 @@ export class CreateDebtTransactionDto {
   @IsString()
   @MaxLength(5000)
   note?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  prepaidAmount?: number;
 
   @ValidateNested({ each: true })
   @Type(() => CreateTransactionItemDto)

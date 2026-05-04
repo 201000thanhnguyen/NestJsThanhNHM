@@ -131,6 +131,11 @@ export class DebtController {
   }
 
   // --- Reports ---
+  @Get('report')
+  report(@Query('fromDate') fromDate?: string, @Query('toDate') toDate?: string) {
+    return this.reports.report(fromDate, toDate);
+  }
+
   @Get('reports/customer-debts')
   customerDebts() {
     return this.reports.customerDebts();
