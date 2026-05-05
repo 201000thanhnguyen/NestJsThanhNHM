@@ -9,4 +9,3 @@ export class UpdateQuoteDto {
   @IsString()
   author?: string;
 }
-

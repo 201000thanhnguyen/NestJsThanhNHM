@@ -71,10 +71,34 @@ describe('TransactionsService', () => {
 
   it('calculates monthly summary', async () => {
     data.push(
-      { id: 1, date: '2026-04-01', amount: 1000000, type: 'attendance', period: '2026-04' },
-      { id: 2, date: '2026-04-02', amount: 200000, type: 'bonus', period: '2026-04' },
-      { id: 3, date: '2026-04-03', amount: -100000, type: 'penalty', period: '2026-04' },
-      { id: 4, date: '2026-04-30', amount: -500000, type: 'payment', period: '2026-04' },
+      {
+        id: 1,
+        date: '2026-04-01',
+        amount: 1000000,
+        type: 'attendance',
+        period: '2026-04',
+      },
+      {
+        id: 2,
+        date: '2026-04-02',
+        amount: 200000,
+        type: 'bonus',
+        period: '2026-04',
+      },
+      {
+        id: 3,
+        date: '2026-04-03',
+        amount: -100000,
+        type: 'penalty',
+        period: '2026-04',
+      },
+      {
+        id: 4,
+        date: '2026-04-30',
+        amount: -500000,
+        type: 'payment',
+        period: '2026-04',
+      },
     );
 
     const result = await service.getSummary('2026-04');
@@ -85,9 +109,27 @@ describe('TransactionsService', () => {
 
   it('applies FIFO across multiple months', async () => {
     data.push(
-      { id: 1, date: '2026-03-10', amount: 1000000, type: 'attendance', period: '2026-03' },
-      { id: 2, date: '2026-04-10', amount: 1500000, type: 'attendance', period: '2026-04' },
-      { id: 3, date: '2026-04-30', amount: -1200000, type: 'payment', period: null },
+      {
+        id: 1,
+        date: '2026-03-10',
+        amount: 1000000,
+        type: 'attendance',
+        period: '2026-03',
+      },
+      {
+        id: 2,
+        date: '2026-04-10',
+        amount: 1500000,
+        type: 'attendance',
+        period: '2026-04',
+      },
+      {
+        id: 3,
+        date: '2026-04-30',
+        amount: -1200000,
+        type: 'payment',
+        period: null,
+      },
     );
 
     const mar = await service.getSummary('2026-03');
@@ -101,8 +143,20 @@ describe('TransactionsService', () => {
 
   it('handles overpayment', async () => {
     data.push(
-      { id: 1, date: '2026-03-10', amount: 500000, type: 'attendance', period: '2026-03' },
-      { id: 2, date: '2026-03-30', amount: -1000000, type: 'payment', period: null },
+      {
+        id: 1,
+        date: '2026-03-10',
+        amount: 500000,
+        type: 'attendance',
+        period: '2026-03',
+      },
+      {
+        id: 2,
+        date: '2026-03-30',
+        amount: -1000000,
+        type: 'payment',
+        period: null,
+      },
     );
 
     const result = await service.getSummary('2026-03');

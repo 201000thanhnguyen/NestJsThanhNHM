@@ -42,7 +42,7 @@ export class QuotesService {
 
   async remove(id: string) {
     const result = await this.quotesRepository.delete(id);
-    if (result.affected === 0) throw new NotFoundException(`Quote with id ${id} not found`);
+    if (result.affected === 0)
+      throw new NotFoundException(`Quote with id ${id} not found`);
   }
 }
-

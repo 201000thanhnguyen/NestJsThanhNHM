@@ -1,4 +1,10 @@
-import { IsMilitaryTime, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsMilitaryTime,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class UpdateShiftDto {
   @IsOptional()
@@ -18,4 +24,3 @@ export class UpdateShiftDto {
   @Min(0)
   salary?: number;
 }
-

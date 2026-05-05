@@ -20,7 +20,10 @@ export class AuthService {
   }
 
   validateCredentials(username: string, password: string): AuthUser {
-    if (username !== this.expectedUsername || password !== this.expectedPassword) {
+    if (
+      username !== this.expectedUsername ||
+      password !== this.expectedPassword
+    ) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -38,7 +41,8 @@ export class AuthService {
   verifyAccessToken(token: string): AuthUser {
     try {
       const payload = jwt.verify(token, this.jwtSecret) as JwtPayload;
-      const username = typeof payload.username === 'string' ? payload.username : undefined;
+      const username =
+        typeof payload.username === 'string' ? payload.username : undefined;
       if (!username) throw new Error('Missing username');
       return { username };
     } catch {
@@ -46,4 +50,3 @@ export class AuthService {
     }
   }
 }
-

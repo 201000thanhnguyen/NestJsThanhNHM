@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
@@ -70,7 +74,9 @@ export class DebtTransactionsService {
       throw new BadRequestException('Số tiền trả trước không hợp lệ');
     }
     if (prepaid - total > 0.0001) {
-      throw new BadRequestException('Số tiền trả trước không được lớn hơn tổng tiền');
+      throw new BadRequestException(
+        'Số tiền trả trước không được lớn hơn tổng tiền',
+      );
     }
 
     const savedTx = await this.dataSource.transaction(async (manager) => {
@@ -176,5 +182,4 @@ export class DebtTransactionsService {
 
     return { data: { ...tx, items } };
   }
-
 }

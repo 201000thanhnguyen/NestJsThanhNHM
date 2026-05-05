@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddPrepaidAmountToDebtTransactions1760000001000 implements MigrationInterface {
+export class AddPrepaidAmountToDebtTransactions1760000001000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable('giao_dich');
     if (!table) return;
@@ -28,4 +30,3 @@ export class AddPrepaidAmountToDebtTransactions1760000001000 implements Migratio
     await queryRunner.dropColumn('giao_dich', 'prepaid_amount');
   }
 }
-

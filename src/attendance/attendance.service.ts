@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
@@ -19,7 +23,9 @@ export class AttendanceService {
   ) {}
 
   async findAll() {
-    const items = await this.attendanceRepository.find({ order: { date: 'ASC' } });
+    const items = await this.attendanceRepository.find({
+      order: { date: 'ASC' },
+    });
     return { data: items.map((item) => this.toResponse(item)) };
   }
 
@@ -27,9 +33,13 @@ export class AttendanceService {
     this.validateDate(body.date);
     await this.ensureShiftIdsExist(body.shiftIds);
 
-    const existing = await this.attendanceRepository.findOneBy({ date: body.date });
+    const existing = await this.attendanceRepository.findOneBy({
+      date: body.date,
+    });
     if (existing) {
-      throw new BadRequestException(`Attendance with date ${body.date} already exists`);
+      throw new BadRequestException(
+        `Attendance with date ${body.date} already exists`,
+      );
     }
 
     const attendance = this.attendanceRepository.create({
@@ -47,7 +57,9 @@ export class AttendanceService {
   async updateById(id: string, body: UpdateAttendanceDto) {
     const numericId = this.parseAttendanceId(id);
     await this.ensureShiftIdsExist(body.shiftIds);
-    const attendance = await this.attendanceRepository.findOneBy({ id: numericId });
+    const attendance = await this.attendanceRepository.findOneBy({
+      id: numericId,
+    });
     if (!attendance) {
       throw new NotFoundException(`Attendance with id ${id} not found`);
     }
@@ -75,7 +87,10 @@ export class AttendanceService {
     }
 
     const parsed = new Date(`${date}T00:00:00.000Z`);
-    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+    if (
+      Number.isNaN(parsed.getTime()) ||
+      parsed.toISOString().slice(0, 10) !== date
+    ) {
       throw new BadRequestException('date is invalid');
     }
   }
@@ -103,7 +118,10 @@ export class AttendanceService {
 
   private async syncAttendanceTransaction(date: string, shiftIds: string[]) {
     const period = date.slice(0, 7);
-    const existingTx = await this.transactionsRepository.findOneBy({ date, type: 'attendance' });
+    const existingTx = await this.transactionsRepository.findOneBy({
+      date,
+      type: 'attendance',
+    });
 
     if (shiftIds.length === 0) {
       if (existingTx) {

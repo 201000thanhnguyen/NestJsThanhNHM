@@ -23,13 +23,21 @@ describe('Transactions API (e2e)', () => {
         {
           provide: getRepositoryToken(Transaction),
           useValue: {
-            find: jest.fn(async ({ order }: { order?: { date?: 'ASC' | 'DESC'; id?: 'ASC' | 'DESC' } } = {}) => {
-              const rows = [...data];
-              if (order?.date === 'ASC') {
-                rows.sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
-              }
-              return rows;
-            }),
+            find: jest.fn(
+              async ({
+                order,
+              }: {
+                order?: { date?: 'ASC' | 'DESC'; id?: 'ASC' | 'DESC' };
+              } = {}) => {
+                const rows = [...data];
+                if (order?.date === 'ASC') {
+                  rows.sort(
+                    (a, b) => a.date.localeCompare(b.date) || a.id - b.id,
+                  );
+                }
+                return rows;
+              },
+            ),
             create: jest.fn((input: Partial<Transaction>) => input),
             save: jest.fn(async (input: Partial<Transaction>) => {
               const row = { ...(input as Transaction), id: seq++ };
@@ -42,7 +50,9 @@ describe('Transactions API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 
@@ -98,9 +108,27 @@ describe('Transactions API (e2e)', () => {
 
   it('GET /api/transactions/summary', async () => {
     data.push(
-      { id: 1, date: '2026-03-10', amount: 1000000, type: 'attendance', period: '2026-03' },
-      { id: 2, date: '2026-04-10', amount: 1500000, type: 'attendance', period: '2026-04' },
-      { id: 3, date: '2026-04-30', amount: -1200000, type: 'payment', period: null },
+      {
+        id: 1,
+        date: '2026-03-10',
+        amount: 1000000,
+        type: 'attendance',
+        period: '2026-03',
+      },
+      {
+        id: 2,
+        date: '2026-04-10',
+        amount: 1500000,
+        type: 'attendance',
+        period: '2026-04',
+      },
+      {
+        id: 3,
+        date: '2026-04-30',
+        amount: -1200000,
+        type: 'payment',
+        period: null,
+      },
     );
 
     const response = await request(app.getHttpServer())

@@ -25,10 +25,22 @@ export class DebtTransaction {
   totalAmount: string;
 
   /** Amount paid immediately at creation time (recorded as a payment too). */
-  @Column({ type: 'decimal', precision: 14, scale: 2, default: 0, name: 'prepaid_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 14,
+    scale: 2,
+    default: 0,
+    name: 'prepaid_amount',
+  })
   prepaidAmount: string;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2, default: 0, name: 'paid_amount' })
+  @Column({
+    type: 'decimal',
+    precision: 14,
+    scale: 2,
+    default: 0,
+    name: 'paid_amount',
+  })
   paidAmount: string;
 
   @Column({ type: 'varchar', length: 20 })

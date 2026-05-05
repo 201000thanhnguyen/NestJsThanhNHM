@@ -68,7 +68,10 @@ export class DebtController {
   }
 
   @Get('products/autocomplete')
-  autocompleteProducts(@Query('search') search?: string, @Query('limit') limit?: string) {
+  autocompleteProducts(
+    @Query('search') search?: string,
+    @Query('limit') limit?: string,
+  ) {
     const n = limit ? Number(limit) : undefined;
     return this.products.searchForAutocomplete(search, n);
   }
@@ -132,7 +135,10 @@ export class DebtController {
 
   // --- Reports ---
   @Get('report')
-  report(@Query('fromDate') fromDate?: string, @Query('toDate') toDate?: string) {
+  report(
+    @Query('fromDate') fromDate?: string,
+    @Query('toDate') toDate?: string,
+  ) {
     return this.reports.report(fromDate, toDate);
   }
 

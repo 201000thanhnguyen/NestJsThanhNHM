@@ -27,7 +27,9 @@ export class DebtProductsService {
 
   async findAll(search?: string) {
     const q = search?.trim();
-    const qb = this.products.createQueryBuilder('p').orderBy('p.createdAt', 'DESC');
+    const qb = this.products
+      .createQueryBuilder('p')
+      .orderBy('p.createdAt', 'DESC');
     if (q) {
       qb.where('p.name LIKE :s', { s: `%${q}%` });
     }
@@ -44,7 +46,7 @@ export class DebtProductsService {
     const take = Math.min(Math.max(limit, 1), 10);
 
     const fetchTopUsed = async () => {
-      const topRows = (await this.products.manager.query(
+      const topRows = await this.products.manager.query(
         `
         SELECT product_id, COUNT(*) AS usage_count
         FROM giao_dich_san_pham
@@ -53,7 +55,7 @@ export class DebtProductsService {
         ORDER BY usage_count DESC
         LIMIT 12
         `,
-      )) as TopRow[];
+      );
 
       const topIds = topRows.map((r) => r.product_id).filter(Boolean);
       if (!topIds.length) return [] as DebtProduct[];
@@ -64,7 +66,10 @@ export class DebtProductsService {
         .andWhere('p.is_active = true')
         .getMany();
       const order = new Map(topIds.map((id, i) => [id, i]));
-      topProducts.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+      topProducts.sort(
+        (a, b) =>
+          Number(order.get(a.id) ?? 0) - Number(order.get(b.id) ?? 0),
+      );
       return topProducts;
     };
 
@@ -146,7 +151,8 @@ export class DebtProductsService {
     if (!row) throw new NotFoundException('Không tìm thấy sản phẩm');
 
     if (dto.name !== undefined) row.name = dto.name.trim();
-    if (dto.defaultPrice !== undefined) row.defaultPrice = moneyStr(dto.defaultPrice);
+    if (dto.defaultPrice !== undefined)
+      row.defaultPrice = moneyStr(dto.defaultPrice);
     if (dto.isActive !== undefined) row.isActive = dto.isActive;
 
     const saved = await this.products.save(row);

@@ -1,10 +1,20 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { CreatePaymentAdjustmentDto } from './dto/create-payment-adjustment.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { DebtCustomersService } from './debt-customers.service';
-import { debtStatus, moneyGreater, moneyNum, moneyStr, toDateOnlyString } from './debt.utils';
+import {
+  debtStatus,
+  moneyGreater,
+  moneyNum,
+  moneyStr,
+  toDateOnlyString,
+} from './debt.utils';
 import { DebtPaymentAdjustment } from './entities/payment-adjustment.entity';
 import { DebtPaymentAllocation } from './entities/payment-allocation.entity';
 import { DebtPayment } from './entities/payment.entity';
@@ -24,8 +34,14 @@ function sortOpenTransactions(txs: DebtTransaction[]): DebtTransaction[] {
   return [...txs].sort((a, b) => {
     const c = effectiveTxDate(a).localeCompare(effectiveTxDate(b));
     if (c !== 0) return c;
-    const ta = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
-    const tb = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+    const ta =
+      a.createdAt instanceof Date
+        ? a.createdAt.getTime()
+        : new Date(a.createdAt).getTime();
+    const tb =
+      b.createdAt instanceof Date
+        ? b.createdAt.getTime()
+        : new Date(b.createdAt).getTime();
     return ta - tb;
   });
 }
@@ -51,8 +67,13 @@ export class DebtPaymentsService {
     private readonly snapshots: DebtSnapshotsService,
   ) {}
 
-  async computeActualAmount(manager: EntityManager, paymentId: string): Promise<number> {
-    const pay = await manager.getRepository(DebtPayment).findOne({ where: { id: paymentId } });
+  async computeActualAmount(
+    manager: EntityManager,
+    paymentId: string,
+  ): Promise<number> {
+    const pay = await manager
+      .getRepository(DebtPayment)
+      .findOne({ where: { id: paymentId } });
     if (!pay) return 0;
     const raw = await manager
       .getRepository(DebtPaymentAdjustment)
@@ -64,7 +85,10 @@ export class DebtPaymentsService {
     return moneyNum(pay.amount) + adjSum;
   }
 
-  private async sumAllocations(manager: EntityManager, paymentId: string): Promise<number> {
+  private async sumAllocations(
+    manager: EntityManager,
+    paymentId: string,
+  ): Promise<number> {
     const raw = await manager
       .getRepository(DebtPaymentAllocation)
       .createQueryBuilder('x')
@@ -123,7 +147,10 @@ export class DebtPaymentsService {
   /**
    * Match total allocated amount to effective payment amount (after adjustments).
    */
-  private async reconcileAllocations(manager: EntityManager, paymentId: string): Promise<void> {
+  private async reconcileAllocations(
+    manager: EntityManager,
+    paymentId: string,
+  ): Promise<void> {
     const payRepo = manager.getRepository(DebtPayment);
     const allocRepo = manager.getRepository(DebtPaymentAllocation);
     const txRepo = manager.getRepository(DebtTransaction);
@@ -133,7 +160,9 @@ export class DebtPaymentsService {
 
     const target = await this.computeActualAmount(manager, paymentId);
     if (target < -EPS) {
-      throw new BadRequestException('Số tiền hiệu lực thanh toán không được âm');
+      throw new BadRequestException(
+        'Số tiền hiệu lực thanh toán không được âm',
+      );
     }
 
     let allocated = await this.sumAllocations(manager, paymentId);
@@ -169,7 +198,10 @@ export class DebtPaymentsService {
         if (newAllocAmt <= EPS) {
           await allocRepo.delete({ id: alloc.id });
         } else {
-          await allocRepo.update({ id: alloc.id }, { amount: moneyStr(newAllocAmt) });
+          await allocRepo.update(
+            { id: alloc.id },
+            { amount: moneyStr(newAllocAmt) },
+          );
         }
 
         excess -= cut;
@@ -212,7 +244,10 @@ export class DebtPaymentsService {
 
     const data: PaymentListRow[] = payments.map((p) => {
       const adjustments = byPay.get(p.id) ?? [];
-      const adjSum = adjustments.reduce((s, a) => s + moneyNum(a.amountAdjustment), 0);
+      const adjSum = adjustments.reduce(
+        (s, a) => s + moneyNum(a.amountAdjustment),
+        0,
+      );
       const actual = moneyNum(p.amount) + adjSum;
       return {
         ...p,
@@ -235,7 +270,10 @@ export class DebtPaymentsService {
       where: { paymentId: id },
       order: { createdAt: 'ASC' },
     });
-    const adjSum = adjustments.reduce((s, a) => s + moneyNum(a.amountAdjustment), 0);
+    const adjSum = adjustments.reduce(
+      (s, a) => s + moneyNum(a.amountAdjustment),
+      0,
+    );
     const actualAmount = moneyStr(moneyNum(payment.amount) + adjSum);
     return { ...payment, allocations, adjustments, actualAmount };
   }

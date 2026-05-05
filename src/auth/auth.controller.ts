@@ -42,4 +42,3 @@ export class AuthController {
     return { ok: true, user };
   }
 }
-

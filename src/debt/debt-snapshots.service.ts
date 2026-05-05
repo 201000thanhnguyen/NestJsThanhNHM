@@ -19,12 +19,11 @@ export class DebtSnapshotsService {
       WHERE customer_id = ?
       `,
       [customerId],
-    ) as Array<{ debt: string }>;
+    );
 
     const debt = Number(rows[0]?.debt ?? 0);
-    await this.snapRepo.upsert(
-      { customerId, totalDebt: moneyStr(debt) },
-      ['customerId'],
-    );
+    await this.snapRepo.upsert({ customerId, totalDebt: moneyStr(debt) }, [
+      'customerId',
+    ]);
   }
 }

@@ -38,4 +38,3 @@ export class ShiftsController {
     return this.shiftsService.delete(id);
   }
 }
-

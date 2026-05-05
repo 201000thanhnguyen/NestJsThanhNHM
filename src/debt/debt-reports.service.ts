@@ -35,7 +35,10 @@ export type TimelineEntry =
 export class DebtReportsService {
   constructor(private readonly dataSource: DataSource) {}
 
-  async report(fromDate?: string, toDate?: string): Promise<{
+  async report(
+    fromDate?: string,
+    toDate?: string,
+  ): Promise<{
     data: Array<{
       transactionId: string;
       transactionDate: string;
@@ -66,7 +69,7 @@ export class DebtReportsService {
       params.push(toDate.trim());
     }
 
-    const txs = (await this.dataSource.query(
+    const txs = await this.dataSource.query(
       `
       SELECT
         t.id AS transactionId,
@@ -90,20 +93,12 @@ export class DebtReportsService {
       ORDER BY COALESCE(t.transaction_date, DATE(t.created_at)) ASC, t.created_at ASC
       `,
       params,
-    )) as Array<{
-      transactionId: string;
-      transactionDate: Date | string;
-      createdAt: Date;
-      customerId: string;
-      customerName: string;
-      totalAmount: string;
-      paidAmountAtThatTime: string;
-    }>;
+    );
 
     const ids = txs.map((t) => t.transactionId);
 
     const items = ids.length
-      ? ((await this.dataSource.query(
+      ? await this.dataSource.query(
           `
           SELECT
             id,
@@ -117,14 +112,7 @@ export class DebtReportsService {
           ORDER BY transaction_id ASC, id ASC
           `,
           [ids],
-        )) as Array<{
-          id: string;
-          transactionId: string;
-          productNameSnapshot: string;
-          quantity: number;
-          priceSnapshot: string;
-          subtotal: string;
-        }>)
+        )
       : [];
 
     const byTx = new Map<string, typeof items>();
@@ -138,7 +126,8 @@ export class DebtReportsService {
       if (v instanceof Date) return v.toISOString().slice(0, 10);
       return String(v).slice(0, 10);
     };
-    const toIso = (v: Date) => (v instanceof Date ? v : new Date(v)).toISOString();
+    const toIso = (v: Date) =>
+      (v instanceof Date ? v : new Date(v)).toISOString();
 
     const data = txs.map((t) => {
       const total = moneyNum(t.totalAmount);
@@ -178,7 +167,7 @@ export class DebtReportsService {
       HAVING SUM(total_amount - paid_amount) > 0.0001
       ORDER BY SUM(total_amount - paid_amount) DESC
       `,
-    ) as CustomerDebtRow[];
+    );
 
     const normalized = rows.map((r) => ({
       ...r,
@@ -189,7 +178,7 @@ export class DebtReportsService {
   }
 
   async timeline(customerId: string): Promise<{ data: TimelineEntry[] }> {
-    const txs = (await this.dataSource.query(
+    const txs = await this.dataSource.query(
       `
       SELECT id,
         COALESCE(transaction_date, DATE(created_at)) AS transactionDate,
@@ -203,17 +192,9 @@ export class DebtReportsService {
       ORDER BY COALESCE(transaction_date, DATE(created_at)) DESC, created_at DESC
       `,
       [customerId],
-    )) as Array<{
-      id: string;
-      transactionDate: Date | string;
-      createdAt: Date;
-      totalAmount: string;
-      paidAmount: string;
-      status: string;
-      note: string | null;
-    }>;
+    );
 
-    const pays = (await this.dataSource.query(
+    const pays = await this.dataSource.query(
       `
       SELECT p.id,
         COALESCE(p.payment_date, DATE(p.created_at)) AS paymentDate,
@@ -230,21 +211,15 @@ export class DebtReportsService {
       ORDER BY COALESCE(p.payment_date, DATE(p.created_at)) DESC, p.created_at DESC
       `,
       [customerId],
-    )) as Array<{
-      id: string;
-      paymentDate: Date | string;
-      createdAt: Date;
-      amount: string;
-      actualAmount: string;
-      note: string | null;
-    }>;
+    );
 
     const toYmd = (v: Date | string) => {
       if (v instanceof Date) return v.toISOString().slice(0, 10);
       return String(v).slice(0, 10);
     };
 
-    const toIso = (v: Date) => (v instanceof Date ? v : new Date(v)).toISOString();
+    const toIso = (v: Date) =>
+      (v instanceof Date ? v : new Date(v)).toISOString();
 
     type Ev =
       | { kind: 'transaction'; row: (typeof txs)[0] }
@@ -256,8 +231,14 @@ export class DebtReportsService {
     ];
 
     evs.sort((a, b) => {
-      const da = a.kind === 'transaction' ? toYmd(a.row.transactionDate) : toYmd(a.row.paymentDate);
-      const db = b.kind === 'transaction' ? toYmd(b.row.transactionDate) : toYmd(b.row.paymentDate);
+      const da =
+        a.kind === 'transaction'
+          ? toYmd(a.row.transactionDate)
+          : toYmd(a.row.paymentDate);
+      const db =
+        b.kind === 'transaction'
+          ? toYmd(b.row.transactionDate)
+          : toYmd(b.row.paymentDate);
       const c = da.localeCompare(db);
       if (c !== 0) return c;
       const ta = new Date(a.row.createdAt).getTime();

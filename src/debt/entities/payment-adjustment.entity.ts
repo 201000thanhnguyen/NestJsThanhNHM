@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('debt_payment_adjustment')
 @Index('IDX_DPA_PAYMENT', ['paymentId'])
@@ -10,7 +16,12 @@ export class DebtPaymentAdjustment {
   paymentId: string;
 
   /** Positive = customer pays more; negative = clawback / refund portion. */
-  @Column({ type: 'decimal', precision: 14, scale: 2, name: 'amount_adjustment' })
+  @Column({
+    type: 'decimal',
+    precision: 14,
+    scale: 2,
+    name: 'amount_adjustment',
+  })
   amountAdjustment: string;
 
   @Column({ type: 'text', nullable: true })

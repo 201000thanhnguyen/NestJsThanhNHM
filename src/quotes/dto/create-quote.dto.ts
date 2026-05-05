@@ -9,4 +9,3 @@ export class CreateQuoteDto {
   @IsNotEmpty()
   author: string;
 }
-

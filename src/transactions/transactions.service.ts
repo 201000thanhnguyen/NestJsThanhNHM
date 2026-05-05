@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
@@ -48,7 +52,9 @@ export class TransactionsService {
 
   async update(id: string, body: UpdateTransactionDto) {
     const numericId = this.parseTransactionId(id);
-    const existing = await this.transactionsRepository.findOneBy({ id: numericId });
+    const existing = await this.transactionsRepository.findOneBy({
+      id: numericId,
+    });
     if (!existing) {
       throw new NotFoundException(`Transaction with id ${id} not found`);
     }
@@ -85,7 +91,9 @@ export class TransactionsService {
 
   async remove(id: string) {
     const numericId = this.parseTransactionId(id);
-    const existing = await this.transactionsRepository.findOneBy({ id: numericId });
+    const existing = await this.transactionsRepository.findOneBy({
+      id: numericId,
+    });
     if (!existing) {
       throw new NotFoundException(`Transaction with id ${id} not found`);
     }
@@ -105,7 +113,10 @@ export class TransactionsService {
       .filter((tx) => tx.type !== 'payment')
       .reduce((sum, tx) => sum + tx.amount, 0);
 
-    const byPeriod = new Map<string, { earned: number; periodPayment: number }>();
+    const byPeriod = new Map<
+      string,
+      { earned: number; periodPayment: number }
+    >();
     let fifoPool = 0;
 
     for (const tx of txs) {
@@ -127,7 +138,12 @@ export class TransactionsService {
     }
 
     const periods = Array.from(byPeriod.keys()).sort();
-    const monthlyBreakdown: Array<{ period: string; earned: number; paidTotal: number; unpaid: number }> = [];
+    const monthlyBreakdown: Array<{
+      period: string;
+      earned: number;
+      paidTotal: number;
+      unpaid: number;
+    }> = [];
     const allocatedByPeriod = new Map<string, number>();
     let fifoRemaining = fifoPool;
 
@@ -161,7 +177,10 @@ export class TransactionsService {
     const paidTotal = periodPayment + allocatedPayment;
     const unpaid = earned - paidTotal;
 
-    const globalUnpaid = monthlyBreakdown.reduce((sum, row) => sum + row.unpaid, 0);
+    const globalUnpaid = monthlyBreakdown.reduce(
+      (sum, row) => sum + row.unpaid,
+      0,
+    );
     const paymentHistory = txs
       .filter((tx) => tx.type === 'payment')
       .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
@@ -204,7 +223,9 @@ export class TransactionsService {
 
   private validatePeriodByType(type: TransactionType, period: string | null) {
     if (type === 'payment' && period !== null) {
-      throw new BadRequestException('payment transaction requires period = null');
+      throw new BadRequestException(
+        'payment transaction requires period = null',
+      );
     }
 
     if (type !== 'payment' && period === null) {
@@ -220,7 +241,10 @@ export class TransactionsService {
 
   private validateDate(date: string) {
     const parsed = new Date(`${date}T00:00:00.000Z`);
-    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
+    if (
+      Number.isNaN(parsed.getTime()) ||
+      parsed.toISOString().slice(0, 10) !== date
+    ) {
       throw new BadRequestException('date is invalid');
     }
   }
@@ -269,7 +293,11 @@ export class TransactionsService {
     return created;
   }
 
-  private sumTypeByPeriod(txs: Transaction[], period: string, type: TransactionType) {
+  private sumTypeByPeriod(
+    txs: Transaction[],
+    period: string,
+    type: TransactionType,
+  ) {
     return txs
       .filter((tx) => tx.period === period && tx.type === type)
       .reduce((sum, tx) => sum + tx.amount, 0);
@@ -297,7 +325,9 @@ export class TransactionsService {
       shiftIds.length > 0
         ? await this.shiftsRepository.findBy({ id: In(shiftIds) })
         : [];
-    const salaryByShiftId = new Map(shifts.map((shift) => [shift.id, shift.salary]));
+    const salaryByShiftId = new Map(
+      shifts.map((shift) => [shift.id, shift.salary]),
+    );
 
     const derived = missingRows.map((row, idx) => {
       const amount = row.shiftIds.reduce(
@@ -313,8 +343,8 @@ export class TransactionsService {
       } as Transaction;
     });
 
-    return [...txs, ...derived].sort((a, b) =>
-      a.date.localeCompare(b.date) || a.id - b.id,
+    return [...txs, ...derived].sort(
+      (a, b) => a.date.localeCompare(b.date) || a.id - b.id,
     );
   }
 }

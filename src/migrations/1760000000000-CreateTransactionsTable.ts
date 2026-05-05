@@ -1,6 +1,8 @@
 import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
 
-export class CreateTransactionsTable1760000000000 implements MigrationInterface {
+export class CreateTransactionsTable1760000000000
+  implements MigrationInterface
+{
   public async up(queryRunner: QueryRunner): Promise<void> {
     const hasTable = await queryRunner.hasTable('transactions');
     if (!hasTable) {

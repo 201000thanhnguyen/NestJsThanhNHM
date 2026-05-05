@@ -15,4 +15,3 @@ export class JwtCookieGuard implements CanActivate {
     return true;
   }
 }
-
