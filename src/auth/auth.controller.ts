@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { AuthService } from './auth.service';
+import { AuthService, resolveRoleForUsername } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 
 const ACCESS_COOKIE = 'access_token';
@@ -14,8 +14,14 @@ export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
   @Post('login')
-  login(@Body() body: LoginDto, @Res({ passthrough: true }) res: Response) {
-    const user = this.auth.validateCredentials(body.username, body.password);
+  async login(
+    @Body() body: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const user = await this.auth.validateCredentials(
+      body.username,
+      body.password,
+    );
     const token = this.auth.signAccessToken(user);
 
     res.cookie(ACCESS_COOKIE, token, {
@@ -26,7 +32,7 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { ok: true, user };
+    return { ok: true, user: { username: user.username, role: resolveRoleForUsername(user.username) } };
   }
 
   @Post('logout')

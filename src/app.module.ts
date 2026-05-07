@@ -24,6 +24,8 @@ import { DebtTransactionItem } from './debt/entities/transaction-item.entity';
 import { DebtTransaction } from './debt/entities/transaction.entity';
 import { ImageModule } from './template/upload/image.module';
 import { ImageEntity } from './template/upload/image.entity';
+import { UsersModule } from './users/users.module';
+import { User } from './users/user.entity';
 
 @Module({
   imports: [
@@ -49,6 +51,7 @@ import { ImageEntity } from './template/upload/image.entity';
         DebtPaymentAdjustment,
         DebtSnapshot,
         ImageEntity,
+        User,
       ],
       synchronize: true,
     }),
@@ -60,6 +63,7 @@ import { ImageEntity } from './template/upload/image.entity';
     QuotesModule,
     DebtModule,
     ImageModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

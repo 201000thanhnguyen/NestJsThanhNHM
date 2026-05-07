@@ -31,6 +31,23 @@
 $ npm install
 ```
 
+## Authentication (DB-backed)
+
+- **Login endpoint**: `POST /auth/login` (also available at `POST /api/auth/login`)
+- **Response shape (unchanged)**: `{ ok: true, user: { username } }`
+- **Storage**: HttpOnly cookie `access_token` (JWT)
+- **Default admin seed**: if the `users` table is empty on boot, the server creates:
+  - username: `admin`
+  - password: `24062008` (stored hashed with bcrypt)
+
+Example request:
+
+```bash
+curl -i -X POST http://localhost:3001/auth/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"admin\",\"password\":\"24062008\"}"
+```
+
 ## Compile and run the project
 
 ```bash

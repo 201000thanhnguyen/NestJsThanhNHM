@@ -1,0 +1,113 @@
+nestjs-app/
+├── src/
+│   ├── attendance/
+│   │   ├── dto/
+│   │   │   ├── create-attendance.dto.ts
+│   │   │   └── update-attendance.dto.ts
+│   │   ├── attendance.controller.ts
+│   │   ├── attendance.entity.ts
+│   │   ├── attendance.module.ts
+│   │   └── attendance.service.ts
+│   ├── auth/
+│   │   ├── dto/
+│   │   │   └── login.dto.ts
+│   │   ├── auth.controller.ts
+│   │   ├── auth.module.ts
+│   │   ├── auth.service.ts
+│   │   └── jwt-cookie.guard.ts
+│   ├── cats/
+│   │   ├── dto/
+│   │   │   └── create-cat.dto.ts
+│   │   ├── cat.entity.ts
+│   │   ├── cats.controller.ts
+│   │   ├── cats.module.ts
+│   │   └── cats.service.ts
+│   ├── debt/
+│   │   ├── dto/
+│   │   │   ├── create-customer.dto.ts
+│   │   │   ├── create-debt-transaction.dto.ts
+│   │   │   ├── create-payment-adjustment.dto.ts
+│   │   │   ├── create-payment.dto.ts
+│   │   │   ├── create-product.dto.ts
+│   │   │   ├── create-transaction-item.dto.ts
+│   │   │   ├── update-customer.dto.ts
+│   │   │   └── update-product.dto.ts
+│   │   ├── entities/
+│   │   │   ├── customer.entity.ts
+│   │   │   ├── debt-snapshot.entity.ts
+│   │   │   ├── payment-adjustment.entity.ts
+│   │   │   ├── payment-allocation.entity.ts
+│   │   │   ├── payment.entity.ts
+│   │   │   ├── product.entity.ts
+│   │   │   ├── transaction-item.entity.ts
+│   │   │   └── transaction.entity.ts
+│   │   ├── debt-customers.service.ts
+│   │   ├── debt-payments.service.ts
+│   │   ├── debt-products.service.ts
+│   │   ├── debt-reports.service.ts
+│   │   ├── debt-snapshots.service.ts
+│   │   ├── debt-transactions.service.ts
+│   │   ├── debt.controller.ts
+│   │   ├── debt.module.ts
+│   │   └── debt.utils.ts
+│   ├── migrations/
+│   │   ├── 1760000000000-CreateTransactionsTable.ts
+│   │   └── 1760000001000-AddPrepaidAmountToDebtTransactions.ts
+│   ├── quotes/
+│   │   ├── dto/
+│   │   │   ├── create-quote.dto.ts
+│   │   │   └── update-quote.dto.ts
+│   │   ├── quote.entity.ts
+│   │   ├── quotes.controller.ts
+│   │   ├── quotes.module.ts
+│   │   └── quotes.service.ts
+│   ├── shifts/
+│   │   ├── dto/
+│   │   │   ├── create-shift.dto.ts
+│   │   │   └── update-shift.dto.ts
+│   │   ├── shift.entity.ts
+│   │   ├── shifts.controller.ts
+│   │   ├── shifts.module.ts
+│   │   └── shifts.service.ts
+│   ├── template/
+│   │   └── upload/
+│   │       ├── dto/
+│   │       │   └── update-image.dto.ts
+│   │       ├── image.controller.ts
+│   │       ├── image.entity.ts
+│   │       ├── image.module.ts
+│   │       ├── image.repository.ts
+│   │       ├── image.service.ts
+│   │       └── image.utils.ts
+│   ├── transactions/
+│   │   ├── dto/
+│   │   │   ├── create-transaction.dto.ts
+│   │   │   └── update-transaction.dto.ts
+│   │   ├── transaction.entity.ts
+│   │   ├── transactions.controller.ts
+│   │   ├── transactions.module.ts
+│   │   ├── transactions.service.spec.ts
+│   │   └── transactions.service.ts
+│   ├── app.controller.spec.ts
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   └── main.ts
+├── test/
+│   ├── app.e2e-spec.ts
+│   ├── jest-e2e.json
+│   └── transactions.e2e-spec.ts
+├── uploads/
+│   └── images/
+│       ├── 66219b62-52b7-47c0-9db0-5d9e846b820c.png
+│       └── f1252a70-0e79-4e33-a3e8-d5a6fcdce745.png
+├── .gitignore
+├── .prettierrc
+├── eslint.config.mjs
+├── git
+├── nest-cli.json
+├── package-lock.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+└── tsconfig.json
